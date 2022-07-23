@@ -21,12 +21,25 @@ class GroupOfSatelites {
     this.satellites = [];
   }
   addSatelite(sat) {
+    if (!Validator.checkIfInstanceOf(sat, Satelite)) throw new Error("The given object is invalid")
     this.satellites.push(sat);
+  }
+  deleteSatelitte(index) {
+    if (!isFinite(index) || !(index >= 0)) throw new Error("The index must be a finite,not negative number")
+    this.satellites.splice(index, 1)
+  }
+  showSatelites() {
+    console.table(this.satellites)
   }
 }
 
 class Operator {
   // Ma miec: imie, nazwisko, uuid
+  constructor(name, surname) {
+    this.name = name
+    this.surname = surname
+    this.uuid = Utils.uuidv4();
+  }
   // Ma umożliwiać:
   // - zmianę wysokości i wpółrzędnych pojedynczych satelit
   // - zmianę wysokości i wpółrzędnychcałej grupy
@@ -64,3 +77,11 @@ class Utils {
     )
   }
 }
+
+let satelita1 = new Satelite()
+let satelita2 = new Satelite()
+satelita2.heigth = 10
+let grupaSatelit = new GroupOfSatelites()
+grupaSatelit.addSatelite(satelita1)
+grupaSatelit.addSatelite(satelita2)
+console.table(grupaSatelit.satellites)
