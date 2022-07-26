@@ -1,8 +1,8 @@
-class Satelite {
+class Satellite {
   // Ma miec: uuid, wysokość, współrzędne, status żagla słonecznego(on/off), status nadawania sygnału(on/off), status włączenia satelity
   constructor() {
     this.uuid = Utils.uuidv4();
-    this.heigth = 0;
+    this.height = 0;
     this.coordinates = {
       latitude: 0,
       longitude: 0
@@ -15,13 +15,13 @@ class Satelite {
   }
 }
 
-class GroupOfSatelites {
+class GroupOfSatellites {
   constructor() {
     // Zawiera ewidencję satelit które znajdują się w grupie
     this.satellites = [];
   }
   addSatelite(sat) {
-    if (!Validator.checkIfInstanceOf(sat, Satelite)) throw new Error("The given object is invalid")
+    if (!Validator.checkIfInstanceOf(sat, Satellite)) throw new Error("The given object is invalid")
     this.satellites.push(sat);
   }
   deleteSatelitte(index) {
@@ -29,7 +29,7 @@ class GroupOfSatelites {
     this.satellites.splice(index, 1)
   }
   showSatelites() {
-    console.table(this.satellites)
+    return this.satellites;
   }
 }
 
@@ -46,6 +46,24 @@ class Operator {
   // - otwieranie i składanie żagli słonecznych dla pojedynczego egzemplarza jak i całej grupy
   // - właczanie i wyłączanie sygnału nadawczego dla pojedynczych satelit oraz grup
   // - może tworzyć nowe grupy
+  setSatellitePosition(satellite, height, latitude, longitude) {
+    if (!Validator.checkIfInstanceOf(satellite, Satellite)) throw new Error("the input object is not of Satellite class")
+    if (!Validator.checkIfNumberInRange(latitude, -180, 180)) throw new Error("Minimal and maximal latitude is -180 and 180");
+    if (!Validator.checkIfNumberInRange(longitude, -180, 180)) throw new Error("Minimal and maximal longitude is -180 and 180");
+    if (!Validator.checkIfNumberInRange(height, 0, 100000)) throw new Error("Minimal and maximal heigth is 0 and 100 000");
+    satellite.height = height;
+    satellite.coordinates.latitude = latitude;
+    satellite.coordinates.longitude = longitude;
+  }
+  setGroupOfSatelittesPosition(satGroup, height, latitude, longitude) {
+    if (!Validator.checkIfInstanceOf(satGroup, GroupOfSatellites)) throw new Error("the input object is not of GroupOfSatellites class")
+    if (!Validator.checkIfNumberInRange(latitude, -180, 180)) throw new Error("Minimal and maximal latitude is -180 and 180");
+    if (!Validator.checkIfNumberInRange(longitude, -180, 180)) throw new Error("Minimal and maximal longitude is -180 and 180");
+    if (!Validator.checkIfNumberInRange(height, 0, 100000)) throw new Error("Minimal and maximal heigth is 0 and 100 000");
+
+
+
+  }
 }
 
 class Overlord {
@@ -69,6 +87,16 @@ class Validator {
     const validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     return email.match(validRegex)
   }
+
+
+  static checkIfNumberInRange(number, min, max) {
+    if (isNaN(number) || isNaN(min) || isNaN(max) || !isFinite(number) || !isFinite(min) || !isFinite(max)) throw new Error("Every input value must be a finite number")
+    if (number === null || min === null || max === null) throw new Error("The input must contain the number, min and max range values");
+    if (min > max) throw new Error("The min value has to be lower than the max");
+
+    if (number > max || number < min) return false
+    else return true
+  }
 }
 class Utils {
   static uuidv4() {
@@ -78,10 +106,11 @@ class Utils {
   }
 }
 
-let satelita1 = new Satelite()
-let satelita2 = new Satelite()
-satelita2.heigth = 10
-let grupaSatelit = new GroupOfSatelites()
+let satelita1 = new Satellite()
+let satelita2 = new Satellite()
+satelita2.height = 10
+let grupaSatelit = new GroupOfSatellites()
 grupaSatelit.addSatelite(satelita1)
 grupaSatelit.addSatelite(satelita2)
-console.table(grupaSatelit.satellites)
+let operator1 = new Operator("Andrzej", "Nowak")
+// console.table(grupaSatelit.satellites)
