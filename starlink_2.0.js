@@ -20,7 +20,7 @@ class GroupOfSatellites {
     // Zawiera ewidencję satelit które znajdują się w grupie
     this.satellites = [];
   }
-  addSatelite(sat) {
+  addSatelitte(sat) {
     if (!Validator.checkIfInstanceOf(sat, Satellite)) throw new Error("The given object is invalid")
     this.satellites.push(sat);
   }
@@ -28,8 +28,8 @@ class GroupOfSatellites {
     if (!isFinite(index) || !(index >= 0)) throw new Error("The index must be a finite,not negative number")
     this.satellites.splice(index, 1)
   }
-  showSatelites() {
-    return this.satellites;
+  showSatelittes() {
+    return console.table(this.satellites);
   }
 }
 
@@ -56,13 +56,23 @@ class Operator {
     satellite.coordinates.longitude = longitude;
   }
   setGroupOfSatelittesPosition(satGroup, height, latitude, longitude) {
-    if (!Validator.checkIfInstanceOf(satGroup, GroupOfSatellites)) throw new Error("the input object is not of GroupOfSatellites class")
-    if (!Validator.checkIfNumberInRange(latitude, -180, 180)) throw new Error("Minimal and maximal latitude is -180 and 180");
-    if (!Validator.checkIfNumberInRange(longitude, -180, 180)) throw new Error("Minimal and maximal longitude is -180 and 180");
-    if (!Validator.checkIfNumberInRange(height, 0, 100000)) throw new Error("Minimal and maximal heigth is 0 and 100 000");
+    satGroup.satellites.forEach((sat) => {
+      {
+        this.setSatellitePosition(sat, height, latitude, longitude)
+      }
+    })
+  }
+  changeSatelliteSolarsailAndBroadcasting(satellite, solarSail, broadcasting) {
+    if (!Validator.checkIfInstanceOf(satellite, Satellite)) throw new Error("The input object is not of Satellite class");
+    if (!areArgumentsValidValues(solarSail, broadcasting)) throw new Error(`Input only "on" or "off" values for the satellite solarsail and broadcasting state`);
 
-
-
+    satellite.state.solarSail = solarSail;
+    satellite.state.broadcasting = broadcasting;
+  }
+  changeGroupOfSatelliteSolarsailAndBroadcasting(satGroup, solarSail, broadcasting) {
+    satGroup.satellites.forEach(sat => {
+      this.changeSatelliteSolarsailAndBroadcasting(sat, solarSail, broadcasting);
+    })
   }
 }
 
@@ -87,8 +97,6 @@ class Validator {
     const validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
     return email.match(validRegex)
   }
-
-
   static checkIfNumberInRange(number, min, max) {
     if (isNaN(number) || isNaN(min) || isNaN(max) || !isFinite(number) || !isFinite(min) || !isFinite(max)) throw new Error("Every input value must be a finite number")
     if (number === null || min === null || max === null) throw new Error("The input must contain the number, min and max range values");
@@ -106,11 +114,22 @@ class Utils {
   }
 }
 
+const areArgumentsValidValues = function () {
+  const argumentsArr = [...arguments];
+  let argumentsResult = argumentsArr.map(argument => {
+    if (argument === "on" || argument === "off") return true;
+  })
+  const result = argumentsResult.every((argumentResult) => {
+    return argumentResult === true;
+  })
+  return result
+}
+
 let satelita1 = new Satellite()
 let satelita2 = new Satellite()
 satelita2.height = 10
 let grupaSatelit = new GroupOfSatellites()
-grupaSatelit.addSatelite(satelita1)
-grupaSatelit.addSatelite(satelita2)
+grupaSatelit.addSatelitte(satelita1)
+grupaSatelit.addSatelitte(satelita2)
 let operator1 = new Operator("Andrzej", "Nowak")
 // console.table(grupaSatelit.satellites)
