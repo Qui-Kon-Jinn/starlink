@@ -10,25 +10,27 @@ class Satellite {
     this.state = {
       solarSail: "off",
       broadcasting: "off",
-      turned: "off"
+      turned: "on"
     }
+    allSatellites.push(this)
   }
 }
 
 class GroupOfSatellites {
-  constructor() {
+  constructor(satellites = []) {
     // Zawiera ewidencję satelit które znajdują się w grupie
-    this.satellites = [];
+    this.satellites = satellites;
   }
-  addSatelitte(sat) {
-    if (!Validator.checkIfInstanceOf(sat, Satellite)) throw new Error("The given object is invalid")
+  addSatellite(sat) {
+    if (!Validator.checkIfInstanceOf(sat, Satellite)) throw new Error("The given object needs to be a Satellite class instance")
     this.satellites.push(sat);
+    return this
   }
-  deleteSatelitte(index) {
-    if (!isFinite(index) || !(index >= 0)) throw new Error("The index must be a finite,not negative number")
+  deleteSatellite(index) {
+    if (!isFinite(index) || !(index >= 0)) throw new Error("The index must be a finite, not negative number")
     this.satellites.splice(index, 1)
   }
-  showSatelittes() {
+  showSatelites() {
     return console.table(this.satellites);
   }
 }
@@ -46,41 +48,75 @@ class Operator {
   // - otwieranie i składanie żagli słonecznych dla pojedynczego egzemplarza jak i całej grupy
   // - właczanie i wyłączanie sygnału nadawczego dla pojedynczych satelit oraz grup
   // - może tworzyć nowe grupy
-  setSatellitePosition(satellite, height, latitude, longitude) {
+  setSatelliteHeight(satellite, height) {
     if (!Validator.checkIfInstanceOf(satellite, Satellite)) throw new Error("the input object is not of Satellite class")
-    if (!Validator.checkIfNumberInRange(latitude, -180, 180)) throw new Error("Minimal and maximal latitude is -180 and 180");
-    if (!Validator.checkIfNumberInRange(longitude, -180, 180)) throw new Error("Minimal and maximal longitude is -180 and 180");
     if (!Validator.checkIfNumberInRange(height, 0, 100000)) throw new Error("Minimal and maximal heigth is 0 and 100 000");
     satellite.height = height;
+    return this
+  }
+  setSatelliteLatitude(satellite, latitude) {
+    if (!Validator.checkIfInstanceOf(satellite, Satellite)) throw new Error("the input object is not of Satellite class")
+    if (!Validator.checkIfNumberInRange(latitude, -180, 180)) throw new Error("Minimal and maximal latitude is -180 and 180");
     satellite.coordinates.latitude = latitude;
+    return this
+  }
+  setSatelliteLongitude(satellite, longitude) {
+    if (!Validator.checkIfInstanceOf(satellite, Satellite)) throw new Error("the input object is not of Satellite class")
+    if (!Validator.checkIfNumberInRange(longitude, -180, 180)) throw new Error("Minimal and maximal longitude is -180 and 180");
     satellite.coordinates.longitude = longitude;
+    return this
   }
-  setGroupOfSatelittesPosition(satGroup, height, latitude, longitude) {
-    satGroup.satellites.forEach((sat) => {
-      {
-        this.setSatellitePosition(sat, height, latitude, longitude)
-      }
-    })
+  setSatellitePosition(satellite, height, latitude, longitude) {
+    this.setSatelliteHeight(satellite, height).setSatelliteLatitude(satellite, latitude).setSatelliteLongitude(satellite, longitude);
   }
-  changeSatelliteSolarsailAndBroadcasting(satellite, solarSail, broadcasting) {
+  setGroupOfSatellitesPosition(satGroup, height, latitude, longitude) {
+    if (!Validator.checkIfInstanceOf(satGroup, GroupOfSatellites)) throw new Error("the input object is not of GroupOfSatellites class")
+    satGroup.satellites.forEach((sat) => this.setSatellitePosition(sat, height, latitude, longitude));
+  }
+  setSatelliteSolarsail(satellite, solarSail) {
     if (!Validator.checkIfInstanceOf(satellite, Satellite)) throw new Error("The input object is not of Satellite class");
-    if (!areArgumentsValidValues(solarSail, broadcasting)) throw new Error(`Input only "on" or "off" values for the satellite solarsail and broadcasting state`);
+    if (!areArgumentsValidValues(solarSail)) throw new Error(`Input only "on" or "off" values for the satellite solarsail state`);
 
     satellite.state.solarSail = solarSail;
+    return this
+  }
+  setSatelliteBroadcasting(satellite, broadcasting) {
+    if (!Validator.checkIfInstanceOf(satellite, Satellite)) throw new Error("The input object is not of Satellite class");
+    if (!areArgumentsValidValues(broadcasting)) throw new Error(`Input only "on" or "off" values for the satellite broadcasting state`);
+
     satellite.state.broadcasting = broadcasting;
+    return this
   }
-  changeGroupOfSatelliteSolarsailAndBroadcasting(satGroup, solarSail, broadcasting) {
-    satGroup.satellites.forEach(sat => {
-      this.changeSatelliteSolarsailAndBroadcasting(sat, solarSail, broadcasting);
-    })
+  createGroupOfSatellites(satelliteList = []) {
+    if (!Array.isArray(satelliteList)) throw new Error("The input must consist of an array of at least one Satellite class object")
+    if (satelliteList.some(sat => satelliteList.indexOf(sat) !== satelliteList.lastIndexOf(sat))) throw new Error('The array must not contain repeated elements')
+    const result = new GroupOfSatellites();
+    satelliteList.forEach(satellite => result.addSatellite(satellite))
+    return result
   }
+
 }
 
-class Overlord {
+class Overlord extends Operator {
+  constructor(name, surname) {
+    super(name, surname);
+  }
   // Ma mieć: imie, nazwisko, uuid
   // Ma umożliwiać:
   // - to samo co zwykły operator
   // - może wyłączyć poszczególne satelity, wybrane grupy lub cały system (wszystkie dostępne satelity)
+  turnOffSatellite(satellite) {
+    if (!Validator.checkIfInstanceOf(satellite, Satellite)) throw new Error("The input object is not of Satellite class");
+    satellite.state.turned = "off"
+  }
+  turnOffGroupOfSatellites(satGroup) {
+    if (!Validator.checkIfInstanceOf(satGroup, GroupOfSatellites)) throw new Error("the input object is not of GroupOfSatellites class")
+    satGroup.satellites.forEach(sat => sat.state.turned = "off")
+  }
+  turnOffAllSatellites() {
+    if (!Array.isArray(allSatellites)) throw new Error("The array containing all satellites is invalid")
+    allSatellites.forEach(sat => sat.state.turned = "off")
+  }
 }
 
 class Validator {
@@ -125,11 +161,13 @@ const areArgumentsValidValues = function () {
   return result
 }
 
+const allSatellites = []
 let satelita1 = new Satellite()
 let satelita2 = new Satellite()
 satelita2.height = 10
 let grupaSatelit = new GroupOfSatellites()
-grupaSatelit.addSatelitte(satelita1)
-grupaSatelit.addSatelitte(satelita2)
+grupaSatelit.addSatellite(satelita1)
+grupaSatelit.addSatellite(satelita2)
 let operator1 = new Operator("Andrzej", "Nowak")
+let operator2 = new Overlord("Janusz", "Kowalski")
 // console.table(grupaSatelit.satellites)
