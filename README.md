@@ -1,2 +1,2 @@
 # starlink
-An excersise for OOP.
+An OOP exercise.
